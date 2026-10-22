@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeShellExecution": [
+      {
+        "command": "powershell -NoProfile -ExecutionPolicy Bypass -File .cursor/hooks/kill-mondrain-before-dotnet-build.ps1",
+        "matcher": "dotnet\\s+build"
+      }
+    ]
+  }
+}

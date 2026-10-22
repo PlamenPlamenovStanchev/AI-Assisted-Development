@@ -1,0 +1,508 @@
+/* ---------- Theme tokens ----------
+   --app-* are our own; the --bs-* overrides retint Bootstrap. Both themes set the same variables, because the light
+   block also matches :root and would otherwise leak into dark mode. */
+:root:not([data-bs-theme=dark]), [data-bs-theme=light] {
+    --app-primary: #2563eb;
+    --app-primary-hover: #1d4ed8;
+    --app-primary-rgb: 37, 99, 235;
+    --app-bg: #f4f6fb;
+    --app-surface: #ffffff;
+    --app-muted-bg: #f1f3f8;
+    --app-border: #e4e8f0;
+    --app-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
+    --app-header-bg: rgba(255, 255, 255, 0.85);
+    --bs-primary: var(--app-primary);
+    --bs-primary-rgb: var(--app-primary-rgb);
+    --bs-primary-bg-subtle: #dbe7fe;
+    --bs-primary-text-emphasis: #1e40af;
+    --bs-link-color: var(--app-primary);
+    --bs-link-color-rgb: var(--app-primary-rgb);
+    --bs-link-hover-color: var(--app-primary-hover);
+    --bs-link-hover-color-rgb: 29, 78, 216;
+    --bs-border-color: var(--app-border);
+    /* Chart colours, checked for colour-blind separation and contrast against the surface. The category shades run
+       from -first (largest category) through the base colour to -last. */
+    --chart-income: #0e9488;
+    --chart-income-first: #0a6b62;
+    --chart-income-last: #3fb5a4;
+    --chart-expense: #dc4a42;
+    --chart-expense-first: #a32d28;
+    --chart-expense-last: #e8806f;
+    --chart-balance: #2563eb;
+}
+
+[data-bs-theme=dark] {
+    --app-primary: #3b82f6;
+    --app-primary-hover: #60a5fa;
+    --app-primary-rgb: 59, 130, 246;
+    --app-bg: #0b0f17;
+    --app-surface: #131a26;
+    --app-muted-bg: #1a2231;
+    --app-border: #253043;
+    --app-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+    --app-header-bg: rgba(19, 26, 38, 0.85);
+    --bs-body-bg: #131a26;
+    --bs-body-bg-rgb: 19, 26, 38;
+    --bs-tertiary-bg: #1a2231;
+    --bs-tertiary-bg-rgb: 26, 34, 49;
+    --bs-primary: var(--app-primary);
+    --bs-primary-rgb: var(--app-primary-rgb);
+    --bs-primary-bg-subtle: #172554;
+    --bs-primary-text-emphasis: #93c5fd;
+    --bs-link-color: #60a5fa;
+    --bs-link-color-rgb: 96, 165, 250;
+    --bs-link-hover-color: #93c5fd;
+    --bs-link-hover-color-rgb: 147, 197, 253;
+    --bs-border-color: var(--app-border);
+    --chart-income: #26a685;
+    --chart-income-first: #6fd1b6;
+    --chart-income-last: #1b7a62;
+    --chart-expense: #e96450;
+    --chart-expense-first: #f39a8b;
+    --chart-expense-last: #b5463a;
+    --chart-balance: #3b82f6;
+}
+
+/* ---------- Base ---------- */
+html, body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+body {
+    background-color: var(--app-bg);
+}
+
+h1, .h1, h2, .h2, h3, .h3 {
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+h1:focus {
+    outline: none;
+}
+
+.min-w-0 {
+    min-width: 0;
+}
+
+/* ---------- Bootstrap retint ---------- */
+.btn-primary {
+    --bs-btn-bg: var(--app-primary);
+    --bs-btn-border-color: var(--app-primary);
+    --bs-btn-hover-bg: var(--app-primary-hover);
+    --bs-btn-hover-border-color: var(--app-primary-hover);
+    --bs-btn-active-bg: var(--app-primary-hover);
+    --bs-btn-active-border-color: var(--app-primary-hover);
+    --bs-btn-disabled-bg: var(--app-primary);
+    --bs-btn-disabled-border-color: var(--app-primary);
+    --bs-btn-focus-shadow-rgb: var(--app-primary-rgb);
+}
+
+.btn {
+    font-weight: 500;
+}
+
+.dropdown-menu {
+    --bs-dropdown-link-active-bg: var(--app-primary);
+    --bs-dropdown-border-color: var(--app-border);
+    --bs-dropdown-border-radius: 0.75rem;
+    padding: 0.4rem;
+}
+
+.dropdown-item {
+    border-radius: 0.5rem;
+}
+
+.dropdown-item kbd {
+    background: var(--app-muted-bg);
+    color: var(--bs-secondary-color);
+    border: 1px solid var(--app-border);
+    font-size: 0.7rem;
+    padding: 0.05rem 0.35rem;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: rgba(var(--app-primary-rgb), 0.6);
+}
+
+.btn:focus-visible, .btn-check:focus-visible + .btn, .form-control:focus, .form-select:focus, .form-check-input:focus {
+    box-shadow: 0 0 0 0.25rem rgba(var(--app-primary-rgb), 0.2);
+}
+
+/* ---------- Building blocks ---------- */
+.btn-icon {
+    --bs-btn-color: var(--bs-secondary-color);
+    --bs-btn-hover-color: var(--bs-body-color);
+    --bs-btn-hover-bg: var(--app-muted-bg);
+    --bs-btn-active-color: var(--bs-body-color);
+    --bs-btn-active-bg: var(--app-muted-bg);
+    --bs-btn-active-border-color: transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.375rem;
+    height: 2.375rem;
+    padding: 0;
+    border-radius: 0.6rem;
+    font-size: 1.1rem;
+}
+
+    .btn-icon.btn-sm {
+        width: 2rem;
+        height: 2rem;
+        font-size: 0.95rem;
+    }
+
+.btn-icon-danger {
+    --bs-btn-hover-color: var(--bs-danger);
+    --bs-btn-hover-bg: var(--bs-danger-bg-subtle);
+}
+
+.surface-card {
+    background-color: var(--app-surface);
+    border: 1px solid var(--app-border);
+    border-radius: 0.9rem;
+    box-shadow: var(--app-shadow);
+    overflow: hidden;
+}
+
+.surface-card-footer {
+    padding: 0.75rem 1.25rem;
+    border-top: 1px solid var(--app-border);
+    color: var(--bs-secondary-color);
+    font-size: 0.875rem;
+}
+
+.amount, .stat-value, .amount-input {
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Transactions list ---------- */
+.month-switcher,
+.export-menu {
+    display: inline-flex;
+    align-items: center;
+    background-color: var(--app-surface);
+    border: 1px solid var(--app-border);
+    border-radius: 0.75rem;
+    padding: 0.15rem;
+    box-shadow: var(--app-shadow);
+}
+
+.month-label {
+    min-width: 9.5rem;
+    text-align: center;
+    font-weight: 600;
+}
+
+.month-switcher .month-today {
+    width: auto;
+    padding: 0 0.75rem;
+    margin-right: 0.15rem;
+    border-right: 1px solid var(--app-border);
+    border-radius: 0.6rem 0 0 0.6rem;
+    font-size: 0.875rem;
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    height: 100%;
+    padding: 1.1rem 1.25rem;
+    background-color: var(--app-surface);
+    border: 1px solid var(--app-border);
+    border-radius: 0.9rem;
+    box-shadow: var(--app-shadow);
+}
+
+.stat-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 0.75rem;
+    font-size: 1.25rem;
+}
+
+.stat-label {
+    color: var(--bs-secondary-color);
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.stat-value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+@media (max-width: 575.98px) {
+    .stat-card {
+        padding: 0.9rem 1rem;
+    }
+
+    .stat-icon {
+        display: none;
+    }
+
+    .stat-value {
+        font-size: 1.2rem;
+    }
+}
+
+.transactions-table {
+    --bs-table-bg: transparent;
+    --bs-table-hover-bg: rgba(var(--bs-emphasis-color-rgb), 0.025);
+}
+
+    .transactions-table > thead th {
+        background-color: var(--app-muted-bg);
+        color: var(--bs-secondary-color);
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding-top: 0.7rem;
+        padding-bottom: 0.7rem;
+        white-space: nowrap;
+    }
+
+    .transactions-table > :not(caption) > * > * {
+        padding: 0.8rem 1rem;
+        border-bottom-color: var(--app-border);
+    }
+
+        .transactions-table > :not(caption) > * > :first-child {
+            padding-left: 1.25rem;
+        }
+
+        .transactions-table > :not(caption) > * > :last-child {
+            padding-right: 1.25rem;
+        }
+
+    .transactions-table > tbody > tr:last-child > * {
+        border-bottom: 0;
+    }
+
+.type-dot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    font-size: 0.9rem;
+}
+
+    .type-dot.is-income {
+        background-color: var(--bs-success-bg-subtle);
+        color: var(--bs-success-text-emphasis);
+    }
+
+    .type-dot.is-expense {
+        background-color: var(--bs-danger-bg-subtle);
+        color: var(--bs-danger-text-emphasis);
+    }
+
+.category-pill {
+    display: inline-block;
+    padding: 0.15rem 0.6rem;
+    border: 1px solid var(--app-border);
+    border-radius: 999px;
+    background-color: var(--app-muted-bg);
+    color: var(--bs-secondary-color);
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+.row-actions .btn + .btn {
+    margin-left: 0.25rem;
+}
+
+.empty-state {
+    padding: 3.5rem 1.5rem;
+    text-align: center;
+}
+
+.empty-state-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    margin-bottom: 1rem;
+    border-radius: 50%;
+    background-color: var(--bs-primary-bg-subtle);
+    color: var(--app-primary);
+    font-size: 1.5rem;
+}
+
+/* ---------- Charts ---------- */
+.chart-card {
+    height: 100%;
+    padding: 1rem 1.25rem 1.25rem;
+}
+
+.chart-card-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.chart-title {
+    margin: 0;
+    color: var(--bs-secondary-color);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.9rem;
+    color: var(--bs-secondary-color);
+    font-size: 0.8rem;
+}
+
+    .chart-legend > span {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+.chart-swatch {
+    display: inline-block;
+    width: 0.65rem;
+    height: 0.65rem;
+    border-radius: 0.2rem;
+}
+
+    .chart-swatch.is-income {
+        background-color: var(--chart-income);
+    }
+
+    .chart-swatch.is-expense {
+        background-color: var(--chart-expense);
+    }
+
+    .chart-swatch.is-balance {
+        background-color: var(--chart-balance);
+    }
+
+    .chart-swatch-line {
+        width: 0.9rem;
+        height: 2px;
+        border-radius: 1px;
+    }
+
+.chart-canvas {
+    position: relative;
+    height: 280px;
+}
+
+.chart-donut-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.chart-donut-value {
+    font-size: 1.15rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Transaction editor ---------- */
+.editor-wrap {
+    max-width: 40rem;
+    margin: 0 auto;
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-bottom: 0.5rem;
+    color: var(--bs-secondary-color);
+    font-size: 0.875rem;
+    text-decoration: none;
+}
+
+    .back-link:hover {
+        color: var(--bs-body-color);
+    }
+
+.type-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.25rem;
+    padding: 0.25rem;
+    background-color: var(--app-muted-bg);
+    border: 1px solid var(--app-border);
+    border-radius: 0.75rem;
+}
+
+    .type-toggle .btn {
+        --bs-btn-color: var(--bs-secondary-color);
+        --bs-btn-hover-color: var(--bs-body-color);
+        --bs-btn-active-bg: var(--app-surface);
+        --bs-btn-active-border-color: var(--app-border);
+        border-radius: 0.55rem;
+    }
+
+    .type-toggle .type-expense {
+        --bs-btn-active-color: var(--bs-danger-text-emphasis);
+    }
+
+    .type-toggle .type-income {
+        --bs-btn-active-color: var(--bs-success-text-emphasis);
+    }
+
+    .type-toggle .btn-check:checked + .btn {
+        box-shadow: var(--app-shadow);
+    }
+
+.amount-input {
+    font-weight: 600;
+}
+
+/* ---------- Validation ---------- */
+.form-control.valid.modified, .form-select.valid.modified {
+    border-color: var(--bs-form-valid-border-color);
+}
+
+.form-control.invalid, .form-select.invalid {
+    border-color: var(--bs-form-invalid-border-color);
+}
+
+.validation-message {
+    color: var(--bs-form-invalid-color);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+/* ---------- Blazor ---------- */
+.blazor-error-boundary {
+    background: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTYiIGhlaWdodD0iNDkiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIG92ZXJmbG93PSJoaWRkZW4iPjxkZWZzPjxjbGlwUGF0aCBpZD0iY2xpcDAiPjxyZWN0IHg9IjIzNSIgeT0iNTEiIHdpZHRoPSI1NiIgaGVpZ2h0PSI0OSIvPjwvY2xpcFBhdGg+PC9kZWZzPjxnIGNsaXAtcGF0aD0idXJsKCNjbGlwMCkiIHRyYW5zZm9ybT0idHJhbnNsYXRlKC0yMzUgLTUxKSI+PHBhdGggZD0iTTI2My41MDYgNTFDMjY0LjcxNyA1MSAyNjUuODEzIDUxLjQ4MzcgMjY2LjYwNiA1Mi4yNjU4TDI2Ny4wNTIgNTIuNzk4NyAyNjcuNTM5IDUzLjYyODMgMjkwLjE4NSA5Mi4xODMxIDI5MC41NDUgOTIuNzk1IDI5MC42NTYgOTIuOTk2QzI5MC44NzcgOTMuNTEzIDI5MSA5NC4wODE1IDI5MSA5NC42NzgyIDI5MSA5Ny4wNjUxIDI4OS4wMzggOTkgMjg2LjYxNyA5OUwyNDAuMzgzIDk5QzIzNy45NjMgOTkgMjM2IDk3LjA2NTEgMjM2IDk0LjY3ODIgMjM2IDk0LjM3OTkgMjM2LjAzMSA5NC4wODg2IDIzNi4wODkgOTMuODA3MkwyMzYuMzM4IDkzLjAxNjIgMjM2Ljg1OCA5Mi4xMzE0IDI1OS40NzMgNTMuNjI5NCAyNTkuOTYxIDUyLjc5ODUgMjYwLjQwNyA1Mi4yNjU4QzI2MS4yIDUxLjQ4MzcgMjYyLjI5NiA1MSAyNjMuNTA2IDUxWk0yNjMuNTg2IDY2LjAxODNDMjYwLjczNyA2Ni4wMTgzIDI1OS4zMTMgNjcuMTI0NSAyNTkuMzEzIDY5LjMzNyAyNTkuMzEzIDY5LjYxMDIgMjU5LjMzMiA2OS44NjA4IDI1OS4zNzEgNzAuMDg4N0wyNjEuNzk1IDg0LjAxNjEgMjY1LjM4IDg0LjAxNjEgMjY3LjgyMSA2OS43NDc1QzI2Ny44NiA2OS43MzA5IDI2Ny44NzkgNjkuNTg3NyAyNjcuODc5IDY5LjMxNzkgMjY3Ljg3OSA2Ny4xMTgyIDI2Ni40NDggNjYuMDE4MyAyNjMuNTg2IDY2LjAxODNaTTI2My41NzYgODYuMDU0N0MyNjEuMDQ5IDg2LjA1NDcgMjU5Ljc4NiA4Ny4zMDA1IDI1OS43ODYgODkuNzkyMSAyNTkuNzg2IDkyLjI4MzcgMjYxLjA0OSA5My41Mjk1IDI2My41NzYgOTMuNTI5NSAyNjYuMTE2IDkzLjUyOTUgMjY3LjM4NyA5Mi4yODM3IDI2Ny4zODcgODkuNzkyMSAyNjcuMzg3IDg3LjMwMDUgMjY2LjExNiA4Ni4wNTQ3IDI2My41NzYgODYuMDU0N1oiIGZpbGw9IiNGRkU1MDAiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjwvZz48L3N2Zz4=) no-repeat 1rem/1.8rem, #b32121;
+    padding: 1rem 1rem 1rem 3.7rem;
+    color: white;
+}
+
+    .blazor-error-boundary::after {
+        content: "An error has occurred."
+    }

@@ -1,0 +1,32 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build",
+      "type": "process",
+      "command": "dotnet",
+      "args": ["build", "${workspaceFolder}/fAInances.slnx"],
+      "problemMatcher": "$msCompile",
+      "group": { "kind": "build", "isDefault": true }
+    },
+    {
+      "label": "Run Web App",
+      "type": "process",
+      "command": "dotnet",
+      "args": ["run", "--project", "${workspaceFolder}/src/fAInances.Web", "--launch-profile", "http"],
+      "isBackground": true,
+      "problemMatcher": "$msCompile",
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "group": { "kind": "test", "isDefault": true }
+    },
+    {
+      "label": "Watch Web App",
+      "type": "process",
+      "command": "dotnet",
+      "args": ["watch", "--project", "${workspaceFolder}/src/fAInances.Web", "--launch-profile", "http"],
+      "isBackground": true,
+      "problemMatcher": "$msCompile",
+      "presentation": { "reveal": "always", "panel": "dedicated" }
+    }
+  ]
+}

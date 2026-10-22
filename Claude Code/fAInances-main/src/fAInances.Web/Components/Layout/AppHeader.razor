@@ -1,0 +1,93 @@
+@implements IDisposable
+@inject NavigationManager Navigation
+
+<header class="app-header navbar navbar-expand-md sticky-top">
+    <div class="container-xl">
+        <a class="navbar-brand app-brand" href="">
+            <span class="app-brand-mark" aria-hidden="true"><i class="bi bi-wallet2"></i></span>
+            <span>f<span class="app-brand-ai">AI</span>nances</span>
+        </a>
+
+        @* Quick actions stay visible on every screen size; only the page links collapse on mobile. *@
+        <div class="d-flex align-items-center gap-2 ms-auto order-md-last">
+            <div class="btn-group">
+                <a class="btn btn-primary text-nowrap" href="transactions/new?type=expense" title="Add expense (N)">
+                    <i class="bi bi-plus-lg"></i><span class="d-none d-sm-inline ms-1">Add</span>
+                </a>
+                <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
+                    <span class="visually-hidden">More add options</span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                    <li><h6 class="dropdown-header">Quick add</h6></li>
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center gap-2" href="transactions/new?type=expense">
+                            <i class="bi bi-arrow-down-circle text-danger"></i> Expense <kbd class="ms-auto">N</kbd>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item d-flex align-items-center gap-2" href="transactions/new?type=income">
+                            <i class="bi bi-arrow-up-circle text-success"></i> Income <kbd class="ms-auto">I</kbd>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="dropdown">
+                <button type="button" class="btn btn-icon theme-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Theme">
+                    <i class="bi bi-sun theme-icon-light"></i>
+                    <i class="bi bi-moon-stars theme-icon-dark"></i>
+                    <i class="bi bi-circle-half theme-icon-auto"></i>
+                    <span class="visually-hidden">Toggle theme</span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm theme-menu">
+                    <li><button type="button" class="dropdown-item d-flex align-items-center gap-2" data-theme-value="light"><i class="bi bi-sun"></i> Light <i class="bi bi-check2 ms-auto theme-check"></i></button></li>
+                    <li><button type="button" class="dropdown-item d-flex align-items-center gap-2" data-theme-value="dark"><i class="bi bi-moon-stars"></i> Dark <i class="bi bi-check2 ms-auto theme-check"></i></button></li>
+                    <li><button type="button" class="dropdown-item d-flex align-items-center gap-2" data-theme-value="auto"><i class="bi bi-circle-half"></i> System <i class="bi bi-check2 ms-auto theme-check"></i></button></li>
+                </ul>
+            </div>
+
+            <button class="btn btn-icon d-md-none" type="button" data-bs-toggle="collapse" data-bs-target="#app-nav"
+                    aria-controls="app-nav" aria-expanded="false" aria-label="Toggle navigation">
+                <i class="bi bi-list"></i>
+            </button>
+        </div>
+
+        <div class="collapse navbar-collapse" id="app-nav">
+            <ul class="navbar-nav ms-md-4 me-auto">
+                <li class="nav-item">
+                    <a class="nav-link @(InTransactions ? "active" : null)" href="transactions" aria-current="@(InTransactions ? "page" : null)">
+                        <i class="bi bi-receipt me-1"></i> Transactions
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</header>
+
+@code {
+    private string currentPath = string.Empty;
+
+    // "/" also renders the transaction list, and the editor belongs to the same section.
+    private bool InTransactions => currentPath.Length == 0 || currentPath == "transactions" || currentPath.StartsWith("transactions/", StringComparison.Ordinal);
+
+    protected override void OnInitialized()
+    {
+        UpdatePath(Navigation.Uri);
+        Navigation.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        UpdatePath(e.Location);
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void UpdatePath(string uri)
+    {
+        var path = Navigation.ToBaseRelativePath(uri);
+        var end = path.IndexOfAny(['?', '#']);
+        currentPath = (end >= 0 ? path[..end] : path).TrimEnd('/');
+    }
+
+    public void Dispose() => Navigation.LocationChanged -= OnLocationChanged;
+}

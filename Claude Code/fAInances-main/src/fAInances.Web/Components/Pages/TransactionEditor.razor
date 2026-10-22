@@ -1,0 +1,170 @@
+@page "/transactions/new"
+@page "/transactions/{Id}/edit"
+@inject ITransactionService TransactionService
+@inject NavigationManager Navigation
+
+<PageTitle>@(IsEdit ? "Edit transaction" : "Add transaction") · fAInances</PageTitle>
+
+<div class="editor-wrap">
+    <a class="back-link" href="@ListUrl(model?.Date ?? today)"><i class="bi bi-arrow-left"></i> Transactions</a>
+    <h1 class="h3 mb-4">@(IsEdit ? "Edit transaction" : "Add transaction")</h1>
+
+    @if (notFound)
+    {
+        <div class="alert alert-warning">
+            This transaction could not be found. It may have been deleted.
+            <a href="transactions" class="alert-link">Back to transactions</a>
+        </div>
+    }
+    else if (model is null)
+    {
+        <p class="text-muted">Loading…</p>
+    }
+    else
+    {
+        <EditForm Model="model" OnValidSubmit="SaveAsync" class="surface-card p-4">
+            <DataAnnotationsValidator />
+
+            @if (errorMessage is not null)
+            {
+                <div class="alert alert-danger" role="alert">@errorMessage</div>
+            }
+
+            <div class="mb-3">
+                <span class="form-label d-block">Type</span>
+                <InputRadioGroup @bind-Value="model.Type">
+                    <div class="type-toggle" role="group" aria-label="Transaction type">
+                        <InputRadio Value="TransactionType.Expense" id="type-expense" class="btn-check" />
+                        <label class="btn type-expense" for="type-expense"><i class="bi bi-arrow-down-right me-1"></i> Expense</label>
+                        <InputRadio Value="TransactionType.Income" id="type-income" class="btn-check" />
+                        <label class="btn type-income" for="type-income"><i class="bi bi-arrow-up-right me-1"></i> Income</label>
+                    </div>
+                </InputRadioGroup>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-sm-6">
+                    <label class="form-label" for="amount">Amount</label>
+                    <InputNumber @bind-Value="model.Amount" id="amount" class="form-control form-control-lg amount-input" step="0.01" min="0.01" placeholder="0.00" />
+                    <ValidationMessage For="() => model.Amount" />
+                </div>
+                <div class="col-sm-6">
+                    <label class="form-label" for="date">Date</label>
+                    <InputDate @bind-Value="model.Date" id="date" class="form-control form-control-lg" />
+                    <ValidationMessage For="() => model.Date" />
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="category">Category</label>
+                <CategoryPicker @bind-Value="model.CategoryId" id="category" />
+                <ValidationMessage For="() => model.CategoryId" />
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label" for="description">Description <span class="text-muted">(optional)</span></label>
+                <InputText @bind-Value="model.Description" id="description" class="form-control" maxlength="@Transaction.DescriptionMaxLength"
+                           placeholder="e.g. Weekly shop at the market" />
+                <ValidationMessage For="() => model.Description" />
+            </div>
+
+            <div class="d-flex gap-2 pt-3 border-top">
+                <button type="submit" class="btn btn-primary px-4" disabled="@isSaving">
+                    @if (isSaving)
+                    {
+                        <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+                        <span>Saving…</span>
+                    }
+                    else
+                    {
+                        <span><i class="bi bi-check2 me-1"></i> Save</span>
+                    }
+                </button>
+                <a class="btn btn-outline-secondary" href="@ListUrl(model.Date ?? today)">Cancel</a>
+            </div>
+        </EditForm>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string? Id { get; set; }
+
+    // Pre-selects the type for new transactions, e.g. from the header's quick-add menu ("expense" or "income").
+    [SupplyParameterFromQuery(Name = "type")]
+    public string? InitialType { get; set; }
+
+    private TransactionFormModel? model;
+    private string? errorMessage;
+    private bool notFound;
+    private bool isSaving;
+    private DateOnly today = DateOnly.FromDateTime(DateTime.Now);
+
+    private bool IsEdit => Id is not null;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        model = null;
+        errorMessage = null;
+        notFound = false;
+
+        if (Id is null)
+        {
+            model = new TransactionFormModel { Date = today };
+            if (Enum.TryParse<TransactionType>(InitialType, ignoreCase: true, out var type) && Enum.IsDefined(type))
+            {
+                model.Type = type;
+            }
+            return;
+        }
+
+        var transaction = await TransactionService.GetByIdAsync(Id);
+        if (transaction is null)
+        {
+            notFound = true;
+        }
+        else
+        {
+            model = TransactionFormModel.FromTransaction(transaction);
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (model is null || isSaving)
+        {
+            return;
+        }
+
+        errorMessage = null;
+        isSaving = true;
+        try
+        {
+            var input = model.ToInput();
+            if (Id is null)
+            {
+                await TransactionService.CreateAsync(input);
+            }
+            else
+            {
+                await TransactionService.UpdateAsync(Id, input);
+            }
+
+            Navigation.NavigateTo(ListUrl(input.Date));
+        }
+        catch (ServiceValidationException ex)
+        {
+            errorMessage = ex.Message;
+        }
+        catch (NotFoundException)
+        {
+            notFound = true;
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private static string ListUrl(DateOnly date) => $"transactions?month={date.ToString("yyyy-MM", CultureInfo.InvariantCulture)}";
+}

@@ -1,0 +1,251 @@
+@page "/"
+@page "/transactions"
+@using fAInances.Services.Export
+@inject ITransactionService TransactionService
+@inject NavigationManager Navigation
+
+<PageTitle>Transactions · fAInances</PageTitle>
+
+<div class="d-flex flex-wrap align-items-end justify-content-between gap-3 mb-4">
+    <div>
+        <h1 class="h3 mb-1">Transactions</h1>
+        <p class="text-body-secondary mb-0">Income and expenses for @MonthLabel.</p>
+    </div>
+
+    <div class="d-flex align-items-center gap-2">
+        <div class="month-switcher" role="group" aria-label="Month">
+            @if (!IsCurrentMonth)
+            {
+                <button type="button" class="btn btn-icon month-today" @onclick="GoToCurrentMonth">This month</button>
+            }
+            <button type="button" class="btn btn-icon" aria-label="Previous month" @onclick="() => GoToMonth(-1)"><i class="bi bi-chevron-left"></i></button>
+            <span class="month-label">@MonthLabel</span>
+            <button type="button" class="btn btn-icon" aria-label="Next month" @onclick="() => GoToMonth(1)"><i class="bi bi-chevron-right"></i></button>
+        </div>
+
+        @if (items is { Count: > 0 })
+        {
+            <div class="dropdown export-menu">
+                <button type="button" class="btn btn-icon" data-bs-toggle="dropdown" aria-expanded="false" title="Export">
+                    <i class="bi bi-download"></i>
+                    <span class="visually-hidden">Export @MonthLabel</span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                    <li><h6 class="dropdown-header">Export @MonthLabel</h6></li>
+                    <li><a class="dropdown-item d-flex align-items-center gap-2" href="@ExportUrl(ExportFormats.Csv)" download><i class="bi bi-filetype-csv"></i> CSV</a></li>
+                    <li><a class="dropdown-item d-flex align-items-center gap-2" href="@ExportUrl(ExportFormats.Excel)" download><i class="bi bi-file-earmark-excel"></i> Excel</a></li>
+                    <li><a class="dropdown-item d-flex align-items-center gap-2" href="@ExportUrl(ExportFormats.Pdf)" download><i class="bi bi-file-earmark-pdf"></i> PDF</a></li>
+                </ul>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-4">
+        <div class="stat-card">
+            <span class="stat-icon text-success bg-success-subtle"><i class="bi bi-arrow-up-right"></i></span>
+            <div>
+                <div class="stat-label">Income</div>
+                <div class="stat-value text-success">@FormatTotal(totalIncome)</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4">
+        <div class="stat-card">
+            <span class="stat-icon text-danger bg-danger-subtle"><i class="bi bi-arrow-down-right"></i></span>
+            <div>
+                <div class="stat-label">Expenses</div>
+                <div class="stat-value text-danger">@FormatTotal(totalExpenses)</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="stat-card">
+            <span class="stat-icon text-primary bg-primary-subtle"><i class="bi bi-wallet2"></i></span>
+            <div>
+                <div class="stat-label">Balance</div>
+                <div class="stat-value">@FormatTotal(totalIncome - totalExpenses)</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (errorMessage is not null)
+{
+    <div class="alert alert-danger" role="alert">@errorMessage</div>
+}
+
+@if (items is null)
+{
+    <div class="surface-card p-5 text-center text-body-secondary">
+        <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div> Loading…
+    </div>
+}
+else if (items.Count == 0)
+{
+    <div class="surface-card empty-state">
+        <span class="empty-state-icon"><i class="bi bi-receipt"></i></span>
+        <h2 class="h5 mb-1">No transactions yet</h2>
+        <p class="text-body-secondary mb-3">Nothing recorded for @MonthLabel.</p>
+        <div class="d-flex flex-wrap justify-content-center gap-2">
+            <a class="btn btn-primary" href="transactions/new?type=expense"><i class="bi bi-arrow-down-circle me-1"></i> Add expense</a>
+            <a class="btn btn-outline-success" href="transactions/new?type=income"><i class="bi bi-arrow-up-circle me-1"></i> Add income</a>
+        </div>
+    </div>
+}
+else
+{
+    <MonthCharts Summary="summary" />
+
+    <div class="surface-card">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle transactions-table mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col" class="d-none d-sm-table-cell">Date</th>
+                        <th scope="col">Description</th>
+                        <th scope="col" class="d-none d-md-table-cell">Category</th>
+                        <th scope="col" class="text-end">Amount</th>
+                        <th scope="col"><span class="visually-hidden">Actions</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in items)
+                    {
+                        var isIncome = item.Type == TransactionType.Income;
+                        <tr @key="item.Id">
+                            <td class="text-nowrap d-none d-sm-table-cell">
+                                <div class="fw-medium">@item.Date.ToString("dd MMM", CultureInfo.InvariantCulture)</div>
+                                <div class="small text-body-secondary">@item.Date.ToString("ddd", CultureInfo.InvariantCulture)</div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="type-dot @(isIncome ? "is-income" : "is-expense")" title="@(isIncome ? "Income" : "Expense")">
+                                        <i class="bi @(isIncome ? "bi-arrow-up-right" : "bi-arrow-down-right")"></i>
+                                    </span>
+                                    <div class="min-w-0">
+                                        @if (item.Description is null)
+                                        {
+                                            <span class="text-body-secondary">—</span>
+                                        }
+                                        else
+                                        {
+                                            <span>@item.Description</span>
+                                        }
+                                        <div class="d-md-none small text-body-secondary">
+                                            <span class="d-sm-none">@item.Date.ToString("dd MMM", CultureInfo.InvariantCulture) ·</span>
+                                            @item.CategoryName
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="d-none d-md-table-cell"><span class="category-pill">@item.CategoryName</span></td>
+                            <td class="text-end text-nowrap fw-semibold amount @(isIncome ? "text-success" : "text-danger")">
+                                @(isIncome ? "+" : "−")@item.Amount.ToString("N2", CultureInfo.InvariantCulture)
+                            </td>
+                            <td class="text-end text-nowrap row-actions">
+                                @if (pendingDeleteId == item.Id)
+                                {
+                                    <span class="small me-1">Delete?</span>
+                                    <button type="button" class="btn btn-sm btn-danger" @onclick="() => DeleteAsync(item.Id)">Delete</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="() => pendingDeleteId = null">Keep</button>
+                                }
+                                else
+                                {
+                                    <a class="btn btn-icon btn-sm" href="transactions/@item.Id/edit" title="Edit" aria-label="Edit"><i class="bi bi-pencil"></i></a>
+                                    <button type="button" class="btn btn-icon btn-sm btn-icon-danger" title="Delete" aria-label="Delete" @onclick="() => pendingDeleteId = item.Id"><i class="bi bi-trash3"></i></button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="surface-card-footer">
+            @items.Count @(items.Count == 1 ? "transaction" : "transactions")
+        </div>
+    </div>
+}
+
+@code {
+    [SupplyParameterFromQuery(Name = "month")]
+    public string? Month { get; set; }
+
+    private DateOnly selectedMonth;
+    private MonthlySummary? summary;
+    private IReadOnlyList<TransactionListItem>? items;
+    private string? pendingDeleteId;
+    private string? errorMessage;
+    private decimal totalIncome;
+    private decimal totalExpenses;
+
+    private string MonthLabel => selectedMonth.ToString("MMMM yyyy", CultureInfo.InvariantCulture);
+
+    private bool IsCurrentMonth => selectedMonth == CurrentMonth();
+
+    private string MonthParam => selectedMonth.ToString("yyyy-MM", CultureInfo.InvariantCulture);
+
+    private string ExportUrl(string format) => $"transactions/export?month={MonthParam}&format={format}";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        selectedMonth = ParseMonth(Month);
+        pendingDeleteId = null;
+        errorMessage = null;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        summary = await TransactionService.GetMonthlySummaryAsync(selectedMonth.Year, selectedMonth.Month);
+        items = summary.Transactions;
+        totalIncome = summary.TotalIncome;
+        totalExpenses = summary.TotalExpenses;
+    }
+
+    private void GoToMonth(int offset)
+    {
+        var month = selectedMonth.AddMonths(offset).ToString("yyyy-MM", CultureInfo.InvariantCulture);
+        Navigation.NavigateTo(Navigation.GetUriWithQueryParameter("month", month));
+    }
+
+    private void GoToCurrentMonth() =>
+        Navigation.NavigateTo(Navigation.GetUriWithQueryParameter("month", (string?)null));
+
+    private string FormatTotal(decimal amount) =>
+        items is null ? "—" : (amount < 0 ? "−" : "") + Math.Abs(amount).ToString("N2", CultureInfo.InvariantCulture);
+
+    private async Task DeleteAsync(string id)
+    {
+        errorMessage = null;
+        try
+        {
+            await TransactionService.DeleteAsync(id);
+        }
+        catch (NotFoundException)
+        {
+            // Already gone; the reload below brings the list up to date.
+        }
+
+        pendingDeleteId = null;
+        await LoadAsync();
+    }
+
+    private static DateOnly ParseMonth(string? month)
+    {
+        if (month is not null
+            && DateOnly.TryParseExact($"{month}-01", "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed))
+        {
+            return parsed;
+        }
+
+        return CurrentMonth();
+    }
+
+    private static DateOnly CurrentMonth()
+    {
+        var today = DateTime.Today;
+        return new DateOnly(today.Year, today.Month, 1);
+    }
+}

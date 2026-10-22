@@ -1,0 +1,141 @@
+@using System.Diagnostics.CodeAnalysis
+@inherits InputBase<string?>
+@inject ICategoryService CategoryService
+
+@if (isCreating)
+{
+    @* data-no-implicit-submit (handled in app.js) stops Enter here from submitting the surrounding form. *@
+    <div class="new-category border rounded-3 p-3 bg-body-tertiary" data-no-implicit-submit>
+        <div class="mb-2">
+            <label class="form-label small mb-1" for="new-category-name">New category name</label>
+            <input id="new-category-name" class="form-control form-control-sm" maxlength="@Category.NameMaxLength"
+                   placeholder="e.g. Coffee" autocomplete="off"
+                   @ref="nameInput" @bind="newCategory.Name" @bind:event="oninput" @onkeydown="OnNewCategoryKeyDown" />
+        </div>
+        <div class="mb-2">
+            <label class="form-label small mb-1" for="new-category-description">Description <span class="text-muted">(optional)</span></label>
+            <input id="new-category-description" class="form-control form-control-sm" maxlength="@Category.DescriptionMaxLength"
+                   placeholder="What belongs in this category?" autocomplete="off"
+                   @bind="newCategory.Description" @bind:event="oninput" @onkeydown="OnNewCategoryKeyDown" />
+        </div>
+        @if (createError is not null)
+        {
+            <div class="text-danger small mb-2" role="alert">@createError</div>
+        }
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-sm btn-primary" disabled="@isSaving" @onclick="CreateCategoryAsync">
+                @(isSaving ? "Adding…" : "Add category")
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" disabled="@isSaving" @onclick="CancelCreate">Cancel</button>
+        </div>
+    </div>
+}
+else
+{
+    <div class="input-group">
+        <select @attributes="AdditionalAttributes" class="form-select @CssClass" value="@CurrentValue"
+                disabled="@(categories is null)" @onchange="OnSelectionChanged">
+            <option value="">@(categories is null ? "Loading categories…" : "Choose a category…")</option>
+            @foreach (var category in categories ?? [])
+            {
+                <option value="@category.Id">@category.Name</option>
+            }
+        </select>
+        <button type="button" class="btn btn-outline-secondary" @onclick="StartCreate"><i class="bi bi-plus-lg"></i> New</button>
+    </div>
+    @if (SelectedCategory?.Description is { } description)
+    {
+        <div class="form-text">@description</div>
+    }
+}
+
+@code {
+    private IReadOnlyList<Category>? categories;
+    private CategoryInput newCategory = new();
+    private ElementReference nameInput;
+    private bool isCreating;
+    private bool isSaving;
+    private bool focusNameInput;
+    private string? createError;
+
+    private Category? SelectedCategory => categories?.FirstOrDefault(c => c.Id == CurrentValue);
+
+    protected override async Task OnInitializedAsync()
+    {
+        categories = await CategoryService.GetAllAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (focusNameInput)
+        {
+            focusNameInput = false;
+            await nameInput.FocusAsync();
+        }
+    }
+
+    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out string? result, [NotNullWhen(false)] out string? validationErrorMessage)
+    {
+        result = string.IsNullOrEmpty(value) ? null : value;
+        validationErrorMessage = null;
+        return true;
+    }
+
+    private void OnSelectionChanged(ChangeEventArgs e)
+    {
+        var value = e.Value?.ToString();
+        CurrentValue = string.IsNullOrEmpty(value) ? null : value;
+    }
+
+    private void StartCreate()
+    {
+        newCategory = new CategoryInput();
+        createError = null;
+        isCreating = true;
+        focusNameInput = true;
+    }
+
+    private void CancelCreate()
+    {
+        isCreating = false;
+        createError = null;
+    }
+
+    private async Task OnNewCategoryKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await CreateCategoryAsync();
+        }
+        else if (e.Key == "Escape")
+        {
+            CancelCreate();
+        }
+    }
+
+    private async Task CreateCategoryAsync()
+    {
+        if (isSaving)
+        {
+            return;
+        }
+
+        createError = null;
+        isSaving = true;
+        try
+        {
+            var category = await CategoryService.CreateAsync(newCategory);
+            categories = await CategoryService.GetAllAsync();
+            CurrentValue = category.Id;
+            isCreating = false;
+        }
+        catch (ServiceValidationException ex)
+        {
+            createError = ex.Message;
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+}

@@ -1,0 +1,111 @@
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+
+<div class="row g-3 mb-4">
+    <div class="col-lg-5">
+        <div class="surface-card chart-card">
+            <div class="chart-card-header">
+                <h2 class="chart-title">By category</h2>
+                <div class="chart-legend">
+                    <span><i class="chart-swatch is-income"></i>Income</span>
+                    <span><i class="chart-swatch is-expense"></i>Expenses</span>
+                </div>
+            </div>
+            <div class="chart-canvas chart-canvas-donut">
+                <canvas @ref="donutCanvas" role="img" aria-label="Income and expenses by category for the month"></canvas>
+                <div class="chart-donut-center" aria-hidden="true">
+                    <div class="stat-label">Balance</div>
+                    <div class="chart-donut-value">@FormatAmount(Summary.TotalIncome - Summary.TotalExpenses)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="surface-card chart-card">
+            <div class="chart-card-header">
+                <h2 class="chart-title">Daily trend</h2>
+                <div class="chart-legend">
+                    <span><i class="chart-swatch is-income"></i>Income</span>
+                    <span><i class="chart-swatch is-expense"></i>Expenses</span>
+                    <span><i class="chart-swatch chart-swatch-line is-balance"></i>Balance</span>
+                </div>
+            </div>
+            <div class="chart-canvas">
+                <canvas @ref="trendCanvas" role="img" aria-label="Daily income, expenses and running balance for the month"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public MonthlySummary Summary { get; set; } = default!;
+
+    private ElementReference donutCanvas;
+    private ElementReference trendCanvas;
+    private IJSObjectReference? charts;
+    private Task? createTask;
+    private MonthlySummary? renderedSummary;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            renderedSummary = Summary;
+            createTask = CreateChartsAsync();
+            await createTask;
+        }
+        else if (charts is not null && !ReferenceEquals(Summary, renderedSummary))
+        {
+            renderedSummary = Summary;
+            await charts.InvokeVoidAsync("update", ChartData(Summary));
+        }
+    }
+
+    private async Task CreateChartsAsync()
+    {
+        // Chart.js is only needed here, so the module loads it on demand instead of every page carrying it.
+        await using var module = await JS.InvokeAsync<IJSObjectReference>("import", $"./{Assets["Components/Shared/MonthCharts.razor.js"]}");
+        charts = await module.InvokeAsync<IJSObjectReference>(
+            "create", donutCanvas, trendCanvas, Assets["lib/chart.js/chart.umd.min.js"].ToString(), ChartData(Summary));
+    }
+
+    private static object ChartData(MonthlySummary summary) => new
+    {
+        Categories = summary.IncomeByCategory.Select(c => new { Name = c.CategoryName, c.Amount, Type = "income" })
+            .Concat(summary.ExpensesByCategory.Select(c => new { Name = c.CategoryName, c.Amount, Type = "expense" })),
+        summary.TotalIncome,
+        summary.TotalExpenses,
+        Days = summary.Days.Select(d => new
+        {
+            Label = d.Date.ToString("d MMM", CultureInfo.InvariantCulture),
+            d.Income,
+            d.Expenses,
+            Balance = d.RunningBalance,
+        }),
+    };
+
+    private static string FormatAmount(decimal amount) =>
+        (amount < 0 ? "−" : "") + Math.Abs(amount).ToString("N2", CultureInfo.InvariantCulture);
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (createTask is not null)
+            {
+                await createTask;
+            }
+
+            if (charts is not null)
+            {
+                await charts.InvokeVoidAsync("destroy");
+                await charts.DisposeAsync();
+            }
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone and the page with it; nothing left to clean up.
+        }
+    }
+}

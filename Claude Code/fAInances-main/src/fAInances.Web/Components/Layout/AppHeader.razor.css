@@ -1,0 +1,81 @@
+.app-header {
+    background-color: var(--app-header-bg);
+    backdrop-filter: saturate(180%) blur(12px);
+    -webkit-backdrop-filter: saturate(180%) blur(12px);
+    border-bottom: 1px solid var(--app-border);
+    padding-top: 0.6rem;
+    padding-bottom: 0.6rem;
+    --bs-navbar-color: var(--bs-secondary-color);
+    --bs-navbar-hover-color: var(--bs-body-color);
+    --bs-navbar-active-color: var(--bs-primary-text-emphasis);
+    --bs-navbar-nav-link-padding-x: 0.85rem;
+}
+
+.app-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--bs-emphasis-color);
+}
+
+.app-brand-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    border-radius: 0.65rem;
+    background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%);
+    color: #fff;
+    font-size: 1.05rem;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.35);
+}
+
+.app-brand-ai {
+    color: var(--app-primary);
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0.85rem;
+    border-radius: 0.6rem;
+    font-weight: 500;
+}
+
+    .nav-link:hover {
+        background-color: var(--app-muted-bg);
+    }
+
+    .nav-link.active {
+        background-color: var(--bs-primary-bg-subtle);
+    }
+
+@media (max-width: 767.98px) {
+    .navbar-nav {
+        padding-top: 0.75rem;
+    }
+}
+
+/* Show the icon / checkmark for the chosen theme; data-theme-pref is set on <html> by theme.js. */
+.theme-toggle .bi {
+    display: none;
+}
+
+:root[data-theme-pref=light] .theme-icon-light,
+:root[data-theme-pref=dark] .theme-icon-dark,
+:root[data-theme-pref=auto] .theme-icon-auto {
+    display: inline-block;
+}
+
+.theme-check {
+    visibility: hidden;
+}
+
+:root[data-theme-pref=light] [data-theme-value=light] .theme-check,
+:root[data-theme-pref=dark] [data-theme-value=dark] .theme-check,
+:root[data-theme-pref=auto] [data-theme-value=auto] .theme-check {
+    visibility: visible;
+}

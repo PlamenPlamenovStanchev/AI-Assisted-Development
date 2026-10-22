@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/scripts/cloud/install-dotnet.sh\"",
+            "timeout": 600,
+            "statusMessage": "Installing the .NET SDK if needed"
+          }
+        ]
+      }
+    ]
+  }
+}
